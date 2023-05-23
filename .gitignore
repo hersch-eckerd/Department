@@ -1,0 +1,6 @@
+extension/.env.test
+extension/.env.prod
+extension/.env
+microservice/.env.test
+microservice/.env.prod
+microservice/.env
