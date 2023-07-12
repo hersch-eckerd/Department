@@ -1,6 +1,6 @@
 import React, {useState} from 'react';
 import { withStyles } from '@ellucian/react-design-system/core/styles';
-import { Button, Chip, TextField, List, FormControl, FormControlLabel, FormLabel, FormGroup, Checkbox, ListItem, Grid, Typography } from '@ellucian/react-design-system/core';
+import { Alert, Button, Chip, TextField, List, FormControl, FormControlLabel, FormLabel, FormGroup, Checkbox, ListItem, Grid, Typography } from '@ellucian/react-design-system/core';
 import PropTypes from 'prop-types';
 import Form from '../Form.jsx';
 const styles = () => ({
@@ -84,9 +84,14 @@ function Forms({config, setConfig, classes}) {
     description: '',
     roles: roleList.reduce((obj, roleName) => ({...obj, [roleName]: false}), {})
   })
+  // set up alert state
+  const [alert, setAlert] = useState({ open: false, alertType: '', text: '' })
+
+  // handle form submissions
   const handleSubmit = () => {
     // check if form is valid
     if (newForm.url == '' || newForm.label == '') {
+      setAlert({ open: true, alertType: 'error', text: 'Please fill out both label and url.' })
       return
     }
     // if there are forms already, add the new form to the list, otherwise create a new list with the new form
@@ -174,6 +179,14 @@ function Forms({config, setConfig, classes}) {
             onChange={(e) => handleChange('description', e.target.value)}
             multiline
             label= "Description of Form" />
+            {alert.open &&
+              <Alert
+                className={classes.input}
+                type={alert.alertType}
+                onClose={() => setAlert({ open: false, alertType: '', text: '' })}
+                text={alert.text}
+                open={alert.open} />
+            }
           <Roles
             setNewForm={setNewForm}
             newForm={newForm}

@@ -1,5 +1,4 @@
 // Copyright 2021-2023 Ellucian Company L.P. and its affiliates.
-
 import middy from '@middy/core';
 import httpErrorHandler from '@middy/http-error-handler';
 import httpHeaderNormalizer from '@middy/http-header-normalizer';
@@ -13,7 +12,7 @@ const logger = logUtil.getLogger();
 
 async function handler(event) {
     logger.debug('inbound event: ', event);
-
+    const extensionApiToken = process.env.EXTENSION_API_TOKEN;
     const {
         jwt: {
             card: { cardServerConfigurationApiUrl } = {},
@@ -28,7 +27,8 @@ async function handler(event) {
     logger.debug('card server configuration results: ', results);
 
     const { config, error } = results || {};
-    const { dirCode } = config || {};
+    const { apiKey, dirCode } = config || {};
+
     if (apiKey && !error) {
         const adr = await fetchDirectory({ apiKey, dirCode, erpId });
 

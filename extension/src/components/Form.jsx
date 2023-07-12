@@ -15,9 +15,6 @@ const styles = () => ({
 function Form({form, index, popper, setPopper, classes}) {
   // functions handle description popper from parent
   const handleOpen = (event, index) => {
-    if (popper.open) {
-      return
-    }
     setPopper({anchorEl: event.currentTarget, open: true, index: index})
   }
   const handleClose = () => {
@@ -31,20 +28,21 @@ function Form({form, index, popper, setPopper, classes}) {
         {form.description &&
         <>
           <IconButton
-            onMouseEnter={e => handleOpen(e, index)}
-            onMouseLeave={() => handleClose()}
-            onClick={e => handleOpen(e, index)}
+            onMouseEnter={(e) => handleOpen(e, index)}
+            onMouseLeave={handleClose}
             className={classes.icon}
           >
             <Icon name="help" />
           </IconButton>
-          <Popper
-            open={open && popper.index === index}
-            anchorEl={popper.anchorEl}
-            placement="bottom-start"
-          >
-            <Typography>{form.description}</Typography>
-          </Popper>
+          {popper.open && popper.index === index &&
+            <Popper
+              open={true}
+              anchorEl={popper.anchorEl}
+              placement="bottom-start"
+              text={form.description}
+            >
+            </Popper>
+          }
         </>
       }
     </Grid>

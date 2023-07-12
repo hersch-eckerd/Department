@@ -188,7 +188,7 @@ const DepartmentTemplateCardConfig = ({cardControl:{setCustomConfiguration, setI
                 </>}
                 {forms == true && <Forms setConfig={setConfig} config={config} />}
                 {image == true && <Image setConfig={setConfig} config={config} />}
-                {directory == true && <Directory />}
+                {directory == true && <Directory config={config} />}
             </Grid>
         </Grid>
     );

@@ -70,9 +70,12 @@ const DepartmentTemplateCard = ({ classes }) => {
     const textColor = imageInfo?.url ? 'white' : 'black'
     const imageSet = imageInfo?.url !== undefined
     const handleChange = event => {setValue(event.target.value)}
+    console.log(customConfiguration)
     return (
         <Grid className={classes.card}>
-            {imageSet &&
+            {
+            // if image is set, display it as the background of a div with a gradient overlay
+            imageSet &&
             <div
                 className={classes.cardBackground}
                 style={{ backgroundImage:
@@ -114,7 +117,7 @@ DepartmentTemplateCard.propTypes = {
 };
 
 Summary.propTypes = {
-    sumText: PropTypes.string.isRequired,
+    sumText: PropTypes.string,
     smURL: PropTypes.string,
     showMore: PropTypes.bool,
     textColor: PropTypes.string

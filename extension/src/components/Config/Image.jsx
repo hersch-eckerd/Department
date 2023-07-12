@@ -19,23 +19,19 @@ AWS.config.update({
     accessKeyId: AWS_KEY,
     secretAccessKey: AWS_SECRET,
     region: 'us-east-1'
-    });
+});
 const s3 = new AWS.S3();
 
 function ImageUploader({setConfig, config, classes}) {
     const {url, fileName} = config.client.imageInfo;
     const [file, setFile] = useState(null);
-    const [AWSUrl, setAWSUrl] = useState()
-    const [AWSFileName, setAWSFileName] = useState()
     const [preview, setPreview] = useState()
     const [alert, setAlert] = useState({ open: false, alertType: '', text: '' })
     useEffect(() => {
         if (url && fileName) {
-            setAWSFileName(fileName);
-            setAWSUrl(url);
             setPreview(url)
         }
-    }, [AWSFileName, AWSUrl]);
+    }, [url, fileName]);
 
     const handleAddImage = (image) => {
         setConfig({
@@ -47,17 +43,19 @@ function ImageUploader({setConfig, config, classes}) {
         })
     }
     const handleFileSelect = (e) => {
+        // if file is empty
         if (e.target.files.length === 0) {
             setFile()
             setAlert({ open: true, alertType: 'error', text: 'No file selected.' })
         }
-        if (e.target.files[0].size < 1000000 && e.target.files[0].type.includes('image')) {
-            setFile(e.target.files[0]);
-            setAlert({ open: false, alertType: '', text: '' })
-            setPreview(URL.createObjectURL(e.target.files[0]))
-        } else {
+        // if file is too large or not an image
+        if (e.target.files[0].size > 1000000 && !e.target.files[0].type.includes('image')) {
             setFile()
             setAlert({ open: true, alertType: 'error', text: 'File must be less than 1MB and an image.' })
+        } else {
+            setFile(e.target.files[0])
+            setAlert({ open: false, alertType: '', text: '' })
+            setPreview(URL.createObjectURL(e.target.files[0]))
         }
     }
     const uploadToS3 = async () => {
@@ -70,27 +68,24 @@ function ImageUploader({setConfig, config, classes}) {
             Key: uploadName,
             Body: file
         };
+        console.log(params)
         const { Location } = await s3.upload(params).promise();
         const cardInfo = {
             'fileName': uploadName,
             'url': Location
         }
-        setAWSFileName(uploadName)
-        setAWSUrl(Location)
         handleAddImage(cardInfo)
     }
     const deleteFromS3 = () => {
         const params = {
             Bucket: "experience-extensions",
-            Key: AWSFileName
+            Key: fileName
         };
         s3.deleteObject(params, (err) => {
             if (err) {
                 console.log(err, err.stack)
             }
             else {
-                setAWSUrl()
-                setAWSFileName()
                 setFile()
                 setPreview()
                 handleAddImage({})
@@ -137,8 +132,11 @@ function ImageUploader({setConfig, config, classes}) {
                     onClose={() => setAlert({open: false, alertType: '', text: ''})}
                 />
             }
-            {preview != undefined &&
-                <img style={{ width: '300px' }} src={preview} alt="uploaded" />
+            {preview != undefined
+                ? <img style={{ width: '300px' }} src={preview} alt="uploaded" />
+                : <Typography color="textSecondary">
+                    No image selected.
+                  </Typography>
             }
         </Grid>
     );

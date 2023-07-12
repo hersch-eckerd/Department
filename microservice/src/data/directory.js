@@ -1,8 +1,8 @@
 // Copyright 2021-2023 Ellucian Company L.P. and its affiliates.
 
 import { integrationUtil } from '@ellucian/experience-extension-server-util';
-
 import { logUtil } from '@ellucian/experience-extension-server-util';
+
 const logger = logUtil.getLogger();
 
 export async function fetchDirectory ({ apiKey, dirCode, erpId }) {
