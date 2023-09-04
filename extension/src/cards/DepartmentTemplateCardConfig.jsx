@@ -1,11 +1,11 @@
 import React, {useEffect, useState} from 'react';
 import PropTypes from 'prop-types';
 import { withStyles } from '@ellucian/react-design-system/core/styles';
-import { TextField, Typography, TimePicker, Grid } from '@ellucian/react-design-system/core';
+import { TextField, Typography, TimePicker, Grid, Radio, RadioGroup, TextLink, FormControlLabel, Checkbox } from '@ellucian/react-design-system/core';
 import Directory from '../components/Directory.jsx';
-import Forms from '../components/Config/Forms.jsx';
 import Features from '../components/Config/Features.jsx';
 import Image from '../components/Config/Image.jsx';
+import axios from 'axios';
 const styles = () => ({
     input: {
         marginTop: 20,
@@ -24,6 +24,8 @@ const DepartmentTemplateCardConfig = ({cardControl:{setCustomConfiguration, setI
                 image: false,
                 contact: false
             },
+            department: '',
+            resourceTags: [],
             sumText: '',
             buildText: '',
             blogEmail: '',
@@ -41,24 +43,38 @@ const DepartmentTemplateCardConfig = ({cardControl:{setCustomConfiguration, setI
             apiKey: ''
         }
     })
-    const { sumText, blogEmail, smURL, lambdaURL, startTime, endTime, contactEmail, contactPhone, buildText} = config.client;
+    const { sumText, department, blogEmail, smURL, lambdaURL, startTime, endTime, contactEmail, contactPhone, buildText} = config.client;
     const { showMore, blog, directory, forms, image, contact } = config.client.features;
     const { apiKey, dirCode } = config.server;
-
+    const [departments, setDepartments] = useState([])
+    const [resources, setResources] = useState([])
+    const url = process.env.WORDPRESS_URL + `/wp-json/wp/v2`;
+    useEffect(() => {
+        axios.get(url + `/department?per_page=100`)
+        .then(response => {setDepartments(response.data); console.log(response.data)})
+    }, [])
     useEffect(() => {
         setCustomConfiguration({
             ...config,
             customConfiguration: config
         })
     }, [config])
+    useEffect(() => {
+        if (department?.id) {
+            const departmentId = Number(department.id)
+            axios.get(url + `/resources?&per_page=100&orderby=title&order=asc&department=${departmentId}`)
+            .then(response => {setResources(response.data)})
+        }
+    }, [department])
 
     const handleChange = (tabLabel, e, type) => {
+        const value = JSON.parse(e.target.value);
         const configType = type === "client" ? config.client : config.server;
         setConfig({
             ...config,
             [type]: {
                 ...configType,
-                [tabLabel]: e.target.value
+                [tabLabel]: value
             }
         })
     }
@@ -77,24 +93,37 @@ const DepartmentTemplateCardConfig = ({cardControl:{setCustomConfiguration, setI
 
     return (
         <Grid className={classes.card} direction="column" justifyContent="space-between" alignItems="flex-start">
-            <Features setConfig={setConfig} config={config} />
             <Grid direction="column" justifyContent="space-evenly" alignItems="flex-start" >
-                <Typography variant='h3'>Summary</Typography>
-                <Typography>Give a short summary of the organization</Typography>
-                <TextField
-                    label="Summary"
-                    className={classes.input}
-                    multiline
-                    maxCharacters={{
-                        max: 200,
-                        allowOverflow: false
-                    }}
-                    style={{width: '1000px'}}
-                    required
-                    onBlur={handleBlur}
-                    onChange={(e) => handleChange("sumText", e, "client")}
-                    value={sumText}
-                />
+                {departments.length > 0 && <>
+                    <Typography variant='h3'>Department</Typography>
+                    <Typography>Select the department you would like to display</Typography>
+                    <RadioGroup
+                        id={`DepartmentsChoice`}
+                        name={`DepartmentsChoice`}
+                        value={JSON.stringify(department)}
+                        onChange={(e) => handleChange("department", e, "client")}
+                        required
+                        row
+                        >
+                        {departments.map((department, index) => (
+                            <FormControlLabel
+                                control={ <Radio/> }
+                                label={department.name}
+                                key={index}
+                                value={JSON.stringify(department)}/>
+                        ))}
+                    </RadioGroup>
+                </>}
+                {resources.length > 0 && <>
+                    <Typography variant='h3'>Resources</Typography>
+                    {resources.map((resource) => (
+                        <Typography key={resource.id}>
+                            <TextLink href={resource.acf.resource_url}>
+                                {resource.title.rendered}
+                            </TextLink>
+                        </Typography>
+                    ))}
+                </>}
                 {contact == true && <>
                     <Typography variant='h3'>Contact Info</Typography>
                     <Typography>Provide contact information for your organization</Typography>
@@ -186,7 +215,6 @@ const DepartmentTemplateCardConfig = ({cardControl:{setCustomConfiguration, setI
                         value={blogEmail}
                     />
                 </>}
-                {forms == true && <Forms setConfig={setConfig} config={config} />}
                 {image == true && <Image setConfig={setConfig} config={config} />}
                 {directory == true && <Directory config={config} />}
             </Grid>

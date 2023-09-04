@@ -1,6 +1,6 @@
 import React from 'react';
 import { withStyles } from '@ellucian/react-design-system/core/styles';
-import { Popper, ListItemText, IconButton, Grid, Typography } from '@ellucian/react-design-system/core';
+import { Popper, ListItemText, IconButton, Grid } from '@ellucian/react-design-system/core';
 import PropTypes from 'prop-types';
 import {Icon} from '@ellucian/ds-icons/lib';
 const styles = () => ({

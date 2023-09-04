@@ -15,5 +15,19 @@ module.exports = {
         "customConfiguration": {
             "source": "./src/cards/DepartmentTemplateCardConfig.jsx"
         }
-    }]
+    }, 
+    {
+        "type": "Resources",
+        "source": "./src/cards/Resources",
+        "title": "Resources",
+        "displayCardType": "Organization",
+        "description": "Shows all resources available to the user",
+        "pageRoute": {
+            "route": "/",
+            "excludeClickSelectors": ['#Resources']
+        }
+    }],
+    "page": {
+        "source": "./src/page/router.jsx"
+    }
 }

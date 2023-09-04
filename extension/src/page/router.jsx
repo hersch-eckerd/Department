@@ -5,7 +5,7 @@ import {
     Switch,
     Route
 } from "react-router-dom";
-import Home from "./Home";
+import Resources from "./Resources";
 
 // for more information on react router: https://v5.reactrouter.com/web/guides/quick-start
 
@@ -13,8 +13,8 @@ const RouterPage = (props) => {
     return (
         <Router basename={props.pageInfo.basePath}>
             <Switch>
-                <Route path="/">
-                    <Home {...props} />
+                <Route path="/resources">
+                    <Resources {...props} />
                 </Route>
             </Switch>
         </Router>

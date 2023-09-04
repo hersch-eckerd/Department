@@ -29,6 +29,7 @@ const FormView = ({formList, classes}) => {
         return false
     })
 
+
     // sort forms alphabetically
     filteredForms.sort((a, b) => a.label.localeCompare(b.label));
 

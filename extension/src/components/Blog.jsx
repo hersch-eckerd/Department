@@ -25,7 +25,7 @@ const Blog = ({classes, blogEmail}) => {
     const [posts, setPosts] = useState([]);
     // get url for wordpress blog site from .env file
 
-    const url = process.env.WORDPRESS_URL;
+    const url = process.env.WORDPRESS_URL + `/posts-by-email/`;
     useEffect(() => {
         axios.get(url + blogEmail)
         .then(response => {
