@@ -84,7 +84,6 @@ const DepartmentTemplateCard = ({ classes }) => {
         '_fields': 'id,acf.resource_url,title.rendered'
     };
     const {roles} = useUserInfo();
-    // const [popper, setPopper] = useState({anchorEl: null, open: false, index: null})
     const [resources, setResources] = useState();
     const [backgroundURL, setBackgroundURL] = useState();
     const [value, setValue] = useState('Summary');
