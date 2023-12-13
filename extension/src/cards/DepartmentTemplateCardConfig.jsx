@@ -1,7 +1,7 @@
 import React, {useEffect, useState} from 'react';
 import PropTypes from 'prop-types';
 import { withStyles } from '@ellucian/react-design-system/core/styles';
-import { TextField, Typography, TimePicker, Grid, Radio, RadioGroup, TextLink, FormControlLabel, Checkbox } from '@ellucian/react-design-system/core';
+import { TextField, Typography,  Grid, Radio, RadioGroup, TextLink, FormControlLabel } from '@ellucian/react-design-system/core';
 import Directory from '../components/Directory.jsx';
 import Features from '../components/Config/Features.jsx';
 import Image from '../components/Config/Image.jsx';
@@ -43,15 +43,16 @@ const DepartmentTemplateCardConfig = ({cardControl:{setCustomConfiguration, setI
             apiKey: ''
         }
     })
-    const { sumText, department, blogEmail, smURL, lambdaURL, startTime, endTime, contactEmail, contactPhone, buildText} = config.client;
-    const { showMore, blog, directory, forms, image, contact } = config.client.features;
+    const { department, category, lambdaURL} = config.client;
+    const { directory, image } = config.client.features;
     const { apiKey, dirCode } = config.server;
     const [departments, setDepartments] = useState([])
     const [resources, setResources] = useState([])
+    const [categories, setCategories] = useState([])
     const url = process.env.WORDPRESS_URL + `/wp-json/wp/v2`;
     useEffect(() => {
         axios.get(url + `/department?per_page=100`)
-        .then(response => {setDepartments(response.data); console.log(response.data)})
+        .then(response => {setDepartments(response.data)})
     }, [])
     useEffect(() => {
         setCustomConfiguration({
@@ -59,6 +60,10 @@ const DepartmentTemplateCardConfig = ({cardControl:{setCustomConfiguration, setI
             customConfiguration: config
         })
     }, [config])
+    useEffect(() => {
+        axios.get(url + `/categories?per_page=100`)
+        .then(response => {setCategories(response.data)})
+    }, [])
     useEffect(() => {
         if (department?.id) {
             const departmentId = Number(department.id)
@@ -75,15 +80,6 @@ const DepartmentTemplateCardConfig = ({cardControl:{setCustomConfiguration, setI
             [type]: {
                 ...configType,
                 [tabLabel]: value
-            }
-        })
-    }
-    const handleTime = (name, value) => {
-        setConfig({
-            ...config,
-            client: {
-                ...config.client,
-                [name]: value
             }
         })
     }
@@ -114,6 +110,25 @@ const DepartmentTemplateCardConfig = ({cardControl:{setCustomConfiguration, setI
                         ))}
                     </RadioGroup>
                 </>}
+                {categories.length > 0 && <>
+                    <Typography variant='h3'>Blog Categories</Typography>
+                    <Typography>Select the Blog Categories you would like to display</Typography>
+                    <RadioGroup
+                        id={`BlogCategories`}
+                        name={`BlogCategories`}
+                        value={JSON.stringify(categories)}
+                        onChange={(e) => handleChange("category", e, "client")}
+                        row
+                        >
+                        {categories.map((category, index) => (
+                            <FormControlLabel
+                                control={ <Radio/> }
+                                label={category.name}
+                                key={index}
+                                value={JSON.stringify(category)}/>
+                        ))}
+                    </RadioGroup>
+                </>}
                 {resources.length > 0 && <>
                     <Typography variant='h3'>Resources</Typography>
                     {resources.map((resource) => (
@@ -123,57 +138,6 @@ const DepartmentTemplateCardConfig = ({cardControl:{setCustomConfiguration, setI
                             </TextLink>
                         </Typography>
                     ))}
-                </>}
-                {contact == true && <>
-                    <Typography variant='h3'>Contact Info</Typography>
-                    <Typography>Provide contact information for your organization</Typography>
-                    <TextField
-                        label="Email"
-                        className={classes.input}
-                        onBlur={handleBlur}
-                        onChange={(e) => handleChange("contactEmail", e, "client")}
-                        value={contactEmail}
-                    />
-                    <TextField
-                        label="Phone Number"
-                        className={classes.input}
-                        onBlur={handleBlur}
-                        onChange={(e) => handleChange("contactPhone", e, "client")}
-                        value={contactPhone}
-                    />
-                    <TextField
-                        label="Building"
-                        className={classes.input}
-                        onBlur={handleBlur}
-                        onChange={(e) => handleChange("buildText", e, "client")}
-                        value={buildText}
-                    />
-                    <TimePicker
-                        className={classes.input}
-                        label="Start Time"
-                        onChange={(e) => handleTime("startTime", e)}
-                        helperText="From when is your office available?"
-                        value={startTime}
-                    />
-                    <TimePicker
-                        className={classes.input}
-                        label="End Time"
-                        onChange={(e) => handleTime("endTime", e)}
-                        helperText="Until when is your office available?"
-                        value={endTime}
-                    />
-                </>}
-                {showMore == true && <>
-                    <Typography variant='h3'>Home Website Link</Typography>
-                    <Typography>Add a link to display beneath the summary of your organization</Typography>
-                    <TextField
-                        label= "Home Website Link"
-                        className={classes.input}
-                        onBlur={handleBlur}
-                        onChange={(e) => handleChange("smURL", e, "client")}
-                        placeholder="https://www.eckerd.edu"
-                        value={smURL}
-                    />
                 </>}
                 {directory == true && <>
                     <Typography variant='h3'>Directory</Typography>
@@ -201,18 +165,6 @@ const DepartmentTemplateCardConfig = ({cardControl:{setCustomConfiguration, setI
                         onChange={(e) => handleChange("apiKey", e, "server")}
                         placeholder="21345"
                         value={apiKey}
-                    />
-                </>}
-                {blog == true && <>
-                    <Typography variant='h3'>Blog</Typography>
-                    <Typography>Enter the email of the user from myEckerd that you would like to display blog posts from</Typography>
-                    <TextField
-                        label= "Email to pull blog posts from"
-                        className={classes.input}
-                        onBlur={handleBlur}
-                        onChange={(e) => handleChange("blogEmail", e, "client")}
-                        placeholder="test@eckerd.edu"
-                        value={blogEmail}
                     />
                 </>}
                 {image == true && <Image setConfig={setConfig} config={config} />}

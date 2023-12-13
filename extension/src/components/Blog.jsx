@@ -21,21 +21,22 @@ const styles = () => ({
 });
 // gets posts from wordpress based on user email
 
-const Blog = ({classes, blogEmail}) => {
+const Blog = ({classes, category}) => {
     const [posts, setPosts] = useState([]);
+    console.log(category)
     // get url for wordpress blog site from .env file
-
-    const url = process.env.WORDPRESS_URL + `/posts-by-email/`;
+    const url = process.env.WORDPRESS_URL + `/wp-json/wp/v2/posts?categories=`;
     useEffect(() => {
-        axios.get(url + blogEmail)
+        axios.get(url + category.id)
         .then(response => {
+            console.log(response.data)
             setPosts(response.data);
         })
         .catch(error => {
             console.log(error);
             setPosts([]);
         });
-    }, [blogEmail]);
+    }, [category]);
 
     return (
         <List>
@@ -43,11 +44,11 @@ const Blog = ({classes, blogEmail}) => {
             <ListItem className={classes.blogPost} key={post.id} divider>
                 <Typography variant="h3">
                     <TextLink href={post.link}>
-                        {post.title}
+                        <span dangerouslySetInnerHTML={{ __html: post.title.rendered }} />
                     </TextLink>
                 </Typography>
                 <Typography variant="v4">{moment(post.date).format("Do MMM YYYY h:mm a")}</Typography>
-                <div dangerouslySetInnerHTML={{ __html: post.content }} />
+                <div dangerouslySetInnerHTML={{ __html: post.excerpt.rendered }} />
             </ListItem>
         ))}
         </List>
@@ -55,6 +56,6 @@ const Blog = ({classes, blogEmail}) => {
 }
 Blog.propTypes = {
     classes: PropTypes.object.isRequired,
-    blogEmail: PropTypes.string.isRequired
+    category: PropTypes.object.isRequired
 };
 export default withStyles(styles)(Blog)

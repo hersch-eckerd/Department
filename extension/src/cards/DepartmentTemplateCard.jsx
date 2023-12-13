@@ -5,6 +5,7 @@ import { withStyles } from '@ellucian/react-design-system/core/styles';
 import ResourceList from '../components/ResourceList';
 import { Button, Typography, Grid, Dropdown, DropdownItem } from '@ellucian/react-design-system/core';
 import { ChevronRight, ClipboardList } from '@ellucian/ds-icons/lib';
+import Blog from '../components/Blog';
 import { useCardInfo, useUserInfo, useCardControl } from '@ellucian/experience-extension-utils';
 import axios from 'axios';
 
@@ -89,7 +90,7 @@ const DepartmentTemplateCard = ({ classes }) => {
     const [backgroundURL, setBackgroundURL] = useState();
     const [value, setValue] = useState('Summary');
     const url = process.env.WORDPRESS_URL + `/wp-json/wp/v2`;
-    const features = ['Summary', 'Resources', 'Contact']
+    const features = ['Summary', 'Resources', 'Contact', 'Blog']
     const compareGroups = (groups) => {
         const ids = []
         groups.forEach(item => {
@@ -140,9 +141,10 @@ const DepartmentTemplateCard = ({ classes }) => {
                 </Dropdown>
                 {value == 'Summary' && <Summary department={department} />}
                 {value == 'Resources' && <ResourceList resources={resources} fontColor={'white'} />}
+                {value == 'Blog' && <Blog category={customConfiguration?.category} />}
                 {value == 'Contact' && <Contact
-                contactInfo={department.acf}
-                textColor={'white'} />}
+                    contactInfo={department.acf}
+                    textColor={'white'} />}
             </div>
         </Grid>
     )
