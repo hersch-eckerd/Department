@@ -51,11 +51,7 @@ const resourceCard = (props) => {
     };
     const compareGroups = (groups) => {
         const ids = []
-        groups.forEach(item => {
-            if (roles.includes(item.name)) {
-                ids.push(item.id)
-            }
-        });
+        groups.forEach(item => {if (roles.includes(item.name)) {ids.push(item.id)} });
         params['user-group'] = ids
     }
     useEffect(() => {
@@ -64,8 +60,7 @@ const resourceCard = (props) => {
         .then(async () => {
             // if search bar isn't empty
             if (search.length > 0 && search !== '') {
-                await axios.get(url + `/resources?search=${search}`, {params:params})
-                .then(response => {setResources(response.data)})
+                setResources(await axios.get(url + `/resources?search=${search}`, {params:params}))
             } else {
                 // otherwise, get all resources based on parameters
                 const resources = []

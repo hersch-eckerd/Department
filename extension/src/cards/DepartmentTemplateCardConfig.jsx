@@ -1,8 +1,9 @@
 import React, {useEffect, useState} from 'react';
 import PropTypes from 'prop-types';
 import { withStyles } from '@ellucian/react-design-system/core/styles';
-import { TextField, Typography,  Grid, Radio, RadioGroup, TextLink, FormControlLabel } from '@ellucian/react-design-system/core';
+import { Checkbox, TextField, Typography,  Grid, Radio, RadioGroup, TextLink, FormControlLabel } from '@ellucian/react-design-system/core';
 import Directory from '../components/Directory.jsx';
+import ResourceList from '../components/ResourceList.jsx';
 import Features from '../components/Config/Features.jsx';
 import Image from '../components/Config/Image.jsx';
 import axios from 'axios';
@@ -13,11 +14,10 @@ const styles = () => ({
         marginLeft: 20
     }
 });
-const DepartmentTemplateCardConfig = ({cardControl:{setCustomConfiguration, setIsCustomConfigurationValid}, cardInfo: {configuration: {customConfiguration}}, classes}) => {
+const DepartmentTemplateCardConfig = ({cardControl:{setCustomConfiguration}, cardInfo: {configuration: {customConfiguration}}, classes}) => {
     const [config, setConfig] = useState(customConfiguration ? customConfiguration : {
         client: {
             features: {
-                showMore: false,
                 blog: false,
                 directory: false,
                 forms: false,
@@ -25,6 +25,7 @@ const DepartmentTemplateCardConfig = ({cardControl:{setCustomConfiguration, setI
                 contact: false
             },
             department: '',
+            category: {},
             resourceTags: [],
             sumText: '',
             buildText: '',
@@ -43,53 +44,48 @@ const DepartmentTemplateCardConfig = ({cardControl:{setCustomConfiguration, setI
             apiKey: ''
         }
     })
-    const { department, category, lambdaURL} = config.client;
-    const { directory, image } = config.client.features;
-    const { apiKey, dirCode } = config.server;
+    const { department} = config.client;
     const [departments, setDepartments] = useState([])
     const [resources, setResources] = useState([])
     const [categories, setCategories] = useState([])
-    const url = process.env.WORDPRESS_URL + `/wp-json/wp/v2`;
-    useEffect(() => {
-        axios.get(url + `/department?per_page=100`)
-        .then(response => {setDepartments(response.data)})
-    }, [])
-    useEffect(() => {
-        setCustomConfiguration({
-            ...config,
-            customConfiguration: config
-        })
-    }, [config])
-    useEffect(() => {
-        axios.get(url + `/categories?per_page=100`)
-        .then(response => {setCategories(response.data)})
-    }, [])
-    useEffect(() => {
-        if (department?.id) {
-            const departmentId = Number(department.id)
-            axios.get(url + `/resources?&per_page=100&orderby=title&order=asc&department=${departmentId}`)
-            .then(response => {setResources(response.data)})
-        }
+    axios.defaults.baseURL = process.env.WORDPRESS_URL + `/wp-json/wp/v2`;
+    axios.defaults.params = {
+        'order': 'asc',
+        'per_page': 100
+    }
+    useEffect( () => {
+        axios.all([axios.get('/department'), axios.get('/categories')])
+        .then( ([departments, categories]) => {
+            setDepartments(departments.data)
+            setCategories(categories.data)
+            return axios.get('/resources', {params:{'department': department.id, 'orderby': 'title'}})})
+        .then((response) => setResources(response.data))
     }, [department])
+
+    useEffect(() => {setCustomConfiguration({ ...config, customConfiguration: config})}, [config])
+
+    const handleCheckbox = (id) => {
+        const blogIds = config.client.category ?? [0];
+        const newCategories = blogIds.includes(id) ? blogIds.filter(item => item !== id) : [...blogIds, id];
+        setConfig({ ...config,
+             'client': {
+                 ...config.client,
+                  'category': newCategories}}
+    )}
 
     const handleChange = (tabLabel, e, type) => {
         const value = JSON.parse(e.target.value);
-        const configType = type === "client" ? config.client : config.server;
-        setConfig({
-            ...config,
-            [type]: {
-                ...configType,
-                [tabLabel]: value
-            }
-        })
+        const prevConfig = type === "client" ? config.client : config.server;
+        setConfig({ ...config, [type]: { ...prevConfig, [tabLabel]: value}})
     }
-    const handleBlur = e => {
-        setIsCustomConfigurationValid(e.target.value !== '');
-    }
-
     return (
         <Grid className={classes.card} direction="column" justifyContent="space-between" alignItems="flex-start">
-            <Grid direction="column" justifyContent="space-evenly" alignItems="flex-start" >
+                <Typography variant='h3'>Features</Typography>
+                <Typography>Select the features you would like to display on the department card</Typography>
+                <Features
+                    config={config}
+                    setConfig={setConfig}
+                    classes={classes} />
                 {departments.length > 0 && <>
                     <Typography variant='h3'>Department</Typography>
                     <Typography>Select the department you would like to display</Typography>
@@ -101,75 +97,39 @@ const DepartmentTemplateCardConfig = ({cardControl:{setCustomConfiguration, setI
                         required
                         row
                         >
-                        {departments.map((department, index) => (
+                        {departments.map((department) => (
                             <FormControlLabel
                                 control={ <Radio/> }
                                 label={department.name}
-                                key={index}
+                                key={department.name}
                                 value={JSON.stringify(department)}/>
                         ))}
                     </RadioGroup>
                 </>}
-                {categories.length > 0 && <>
+                {config.client.features.blog && categories.length > 0 &&
+                <>
                     <Typography variant='h3'>Blog Categories</Typography>
                     <Typography>Select the Blog Categories you would like to display</Typography>
-                    <RadioGroup
-                        id={`BlogCategories`}
-                        name={`BlogCategories`}
-                        value={JSON.stringify(categories)}
-                        onChange={(e) => handleChange("category", e, "client")}
-                        row
-                        >
-                        {categories.map((category, index) => (
+                        {categories.map((wpcategory) => {
+                            const checked = config.client.category ? config.client.category.includes(wpcategory.id) : false;
+                            return (
                             <FormControlLabel
-                                control={ <Radio/> }
-                                label={category.name}
-                                key={index}
-                                value={JSON.stringify(category)}/>
-                        ))}
-                    </RadioGroup>
+                                control={
+                                    <Checkbox
+                                        checked={checked}
+                                        onChange={(e) => handleCheckbox(wpcategory.id)}
+                                        value={wpcategory.name}
+                                        /> }
+                                label={wpcategory.name}
+                                key={wpcategory.name}
+                                value={JSON.stringify(wpcategory.id)}/>
+                        )})}
                 </>}
-                {resources.length > 0 && <>
-                    <Typography variant='h3'>Resources</Typography>
-                    {resources.map((resource) => (
-                        <Typography key={resource.id}>
-                            <TextLink href={resource.acf.resource_url}>
-                                {resource.title.rendered}
-                            </TextLink>
-                        </Typography>
-                    ))}
-                </>}
-                {directory == true && <>
-                    <Typography variant='h3'>Directory</Typography>
-                    <Typography>Display a directory of the people in your organization. Enter the Lambda function URL, the Banner from crosswalk-validation, and the API token from Ethos Integration</Typography>
-                    <TextField
-                        label= "AWS Lambda URL"
-                        className={classes.input}
-                        onBlur={handleBlur}
-                        onChange={(e) => handleChange("lambdaURL", e, "client")}
-                        placeholder="localhost:3000"
-                        value={lambdaURL}
-                    />
-                    <TextField
-                        label= "Banner Code from crosswalk-rules to sync groups with"
-                        className={classes.input}
-                        onBlur={handleBlur}
-                        onChange={(e) => handleChange("dirCode", e, "server")}
-                        placeholder="HR-FULL-TIME"
-                        value={dirCode}
-                    />
-                    <TextField
-                        label= "API Key to get token for directory"
-                        className={classes.input}
-                        onBlur={handleBlur}
-                        onChange={(e) => handleChange("apiKey", e, "server")}
-                        placeholder="21345"
-                        value={apiKey}
-                    />
-                </>}
-                {image == true && <Image setConfig={setConfig} config={config} />}
-                {directory == true && <Directory config={config} />}
-            </Grid>
+                {resources.length > 0 &&
+                    <ResourceList
+                        resources={resources}
+                        classes={classes}
+                        fontColor={'black'} />}
         </Grid>
     );
 };

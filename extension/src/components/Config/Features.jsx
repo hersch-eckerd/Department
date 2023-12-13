@@ -11,7 +11,7 @@ const styles = () => ({
 });
 
 const Features = ({ classes, setConfig, config }) => {
-    const { contact, showMore, blog, directory, forms, image  } = config.client.features;
+    const features = ["Contact", "Blog", "Directory", "Forms", "Image"]
     const handleFeature = name => event => {
         setConfig({
             ...config,
@@ -24,80 +24,24 @@ const Features = ({ classes, setConfig, config }) => {
             }
         })
     }
-    return (
-    <FormControl component="fieldset" className={classes.features}>
-        <FormLabel component="legend">
-            Card Features
-        </FormLabel>
-        <FormGroup row={true}>
-            <FormControlLabel
-                control={
-                    <Switch
-                        id={`contact`}
-                        checked={contact}
-                        onChange={handleFeature("contact")}
-                        value={contact}
-                    />
-                }
-                label="Contact Info"
-            />
-            <FormControlLabel
-                control={
-                    <Switch
-                        id={`showMore`}
-                        checked={showMore}
-                        onChange={handleFeature("showMore")}
-                        value={showMore}
-                    />
-                }
-                label="See More Link"
-            />
-            <FormControlLabel
-                control={
-                    <Switch
-                        id={`blog`}
-                        checked={blog}
-                        onChange={handleFeature("blog")}
-                        value={blog}
-                    />
-                }
-                label="Blog"
-            />
-            <FormControlLabel
-                control={
-                    <Switch
-                        id={`forms`}
-                        checked={forms}
-                        onChange={handleFeature("forms")}
-                        value={forms}
-                    />
-                }
-                label="Forms"
-            />
-            <FormControlLabel
-                control={
-                    <Switch
-                        id={`image`}
-                        checked={image}
-                        onChange={handleFeature("image")}
-                        value={image}
-                    />
-                }
-                label="Image"
-            />
-            <FormControlLabel
-                control={
-                    <Switch
-                        id={`directory`}
-                        checked={directory}
-                        onChange={handleFeature("directory")}
-                        value={directory}
-                    />
-                }
-                label="Directory"
-            />
-        </FormGroup>
-    </FormControl>)
+    return  <FormControl component="fieldset" className={classes.features}>
+                <FormGroup row={true}>
+                    {features.map(feature => (
+                        <FormControlLabel
+                            key= {feature}
+                            control={
+                                <Switch
+                                    id={feature}
+                                    checked={config.client.features[feature]}
+                                    onChange={(e) => handleFeature(e.target.checked)}
+                                    value={feature}
+                                />
+                            }
+                            label={feature}
+                        />
+                    ))}
+                </FormGroup>
+            </FormControl>
 };
 
 Features.propTypes = {

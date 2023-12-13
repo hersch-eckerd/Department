@@ -13,17 +13,36 @@ const styles = () => ({
         backgroundColor:'transparent'
     },
     resourceItem: {
-        height: '2rem',
         '&:hover': {
             backgroundColor: '#b2b3b7'
-        }
+        },
+        padding: '5px'
     }
 })
-
-const ResourceList = ({ resources, classes, fontColor }) => {
-    const [popper, setPopper] = useState({anchorEl: null, open: false, index: null})
+const ResourceDesc = ({index, description, setPopper, popper, classes}) => {
     const handleOpen = (event, index) => {setPopper({anchorEl: event.currentTarget, open: true, index: index})}
     const handleClose = () => {setPopper({anchorEl: null, open: false, index: null})}
+    return <>
+        <IconButton
+            onMouseEnter={(e) => handleOpen(e, index)}
+            onMouseLeave={handleClose}
+            className={classes.icon}
+            color='gray'
+        >
+            <Icon name="help" />
+        </IconButton>
+        {popper.open && popper.index === index &&
+            <Popper
+            open={true}
+            anchorEl={popper.anchorEl}
+            placement="bottom-start"
+            text={description}
+            />
+        }
+    </>
+}
+const ResourceList = ({ resources, classes, fontColor }) => {
+    const [popper, setPopper] = useState({anchorEl: null, open: false, index: null})
     const color = fontColor ?? 'default'
     switch (resources) {
         case undefined:
@@ -35,32 +54,17 @@ const ResourceList = ({ resources, classes, fontColor }) => {
                 <List className={classes.resourceList} id="ResourceList">
                     <Typography variant='h3' color={color}>Resources</Typography>
                     {resources.map((resource, index) => (
-                        <ListItem button component="a" className={classes.resourceItem} href={resource.acf.resource_url} key={resource.title} divider>
-                            <Typography >
-                                <TextLink href={resource.acf.resource_url} style={{'color':color}} >
-                                    {resource.title.rendered}
-                                </TextLink>
+                        <ListItem button component="a" className={classes.resourceItem} href={resource.acf.resource_url} key={resource.title.rendered} divider>
+                            <Typography style={{'color':color}} >
+                                {resource.title.rendered}
                             </Typography>
                             {resource.acf.resource_description &&
-                                <>
-                                    <IconButton
-                                        onMouseEnter={(e) => handleOpen(e, index)}
-                                        onMouseLeave={handleClose}
-                                        className={classes.icon}
-                                        color='gray'
-                                    >
-                                        <Icon name="help" />
-                                    </IconButton>
-                                    {popper.open && popper.index === index &&
-                                        <Popper
-                                        open={true}
-                                        anchorEl={popper.anchorEl}
-                                        placement="bottom-start"
-                                        text={resource.acf.resource_description}
-                                        />
-                                    }
-                                </>
-                            }
+                            <ResourceDesc
+                                index={index}
+                                description={resource.acf.resource_description}
+                                popper={popper}
+                                setPopper={setPopper}
+                                classes={classes} /> }
                         </ListItem>
                     ))}
                 </List>
@@ -72,5 +76,12 @@ ResourceList.propTypes = {
     classes: PropTypes.object,
     resources: PropTypes.array,
     fontColor: PropTypes.string
+}
+ResourceDesc.propTypes = {
+    index: PropTypes.number,
+    description: PropTypes.string,
+    setPopper: PropTypes.func,
+    popper: PropTypes.object,
+    classes: PropTypes.object
 }
 export default withStyles(styles)(ResourceList)

@@ -53,11 +53,9 @@ const Summary = (department) => {
 // Component for the contact info of the department
 
 const Contact = ({contactInfo, textColor}) => {
-    console.log(contactInfo)
     const { email, phone, hoursOpen, hoursClosed, building, personName, personTitle, websiteHomepage } = contactInfo;
     const start = moment(hoursOpen, "HH:mm").format("h:mm A");
     const end = moment(hoursClosed, "HH:mm").format("h:mm A");
-
     return (
         <Grid>
             {phone && <Typography variant="h4" style={{color:textColor}}>Phone: {phone}</Typography>}
@@ -85,12 +83,11 @@ const DepartmentTemplateCard = ({ classes }) => {
         '_fields': 'id,acf.resource_url,title.rendered'
     };
     const {roles} = useUserInfo();
-    // const [popper, setPopper] = useState({anchorEl: null, open: false, index: null})
     const [resources, setResources] = useState();
     const [backgroundURL, setBackgroundURL] = useState();
-    const [value, setValue] = useState('Summary');
-    const url = process.env.WORDPRESS_URL + `/wp-json/wp/v2`;
+    const [value, setValue] = useState('Resources');
     const features = ['Summary', 'Resources', 'Contact', 'Blog']
+    axios.defaults.baseURL = process.env.WORDPRESS_URL + `/wp-json/wp/v2`
     const compareGroups = (groups) => {
         const ids = []
         groups.forEach(item => {
@@ -100,28 +97,30 @@ const DepartmentTemplateCard = ({ classes }) => {
         });
         params['user-group'] = ids
     }
-    useEffect(async () => {
-        await axios.get(url + '/media/' + department.acf.featuredImage)
-        .then(response => {setBackgroundURL(response.data.media_details.sizes.medium.source_url)})
-    }, [])
-    useEffect(() => {
-        axios.get(url + '/user-group')
-        .then(response => {compareGroups(response.data)})
+    useEffect( async () => {
+        const deptInfo = [axios.get('/user-group'), axios.get('/media/'+ department.acf.featuredImage)]
+        await axios.all(deptInfo)
+        .then(axios.spread((groups, image) => {
+            compareGroups(groups.data)
+            setBackgroundURL(image.data.media_details.sizes.medium.source_url)
+        }))
         .then(async () => {
-            const response = await axios.get(url + `/resources`, {params})
+            const response = await axios.get(`/resources`, {params:params})
             setResources(response.data)
             setLoadingStatus(false)
         })
-    }, [])
+    }, [] )
     return (
         <Grid className={classes.card}>
             <div
                 className={classes.cardBackground}
-                style={{ backgroundImage:
-                `linear-gradient(
-                rgba(0, 0, 0, 0.6), 
-                rgba(0, 0, 0, 0.4)
-                ), url(${backgroundURL})` }}>
+                style={{
+                    backgroundImage:
+                        `linear-gradient(
+                        rgba(0, 0, 0, 0.6),
+                        rgba(0, 0, 0, 0.4)
+                        ), url(${backgroundURL})`
+                    }}>
             </div>
             <div className={classes.cardContent}>
                 <Dropdown
@@ -137,7 +136,7 @@ const DepartmentTemplateCard = ({ classes }) => {
                                 label={item}
                                 value={item}
                                 RightIconComponent= { <ChevronRight /> } />
-                            )})}
+                        )})}
                 </Dropdown>
                 {value == 'Summary' && <Summary department={department} />}
                 {value == 'Resources' && <ResourceList resources={resources} fontColor={'white'} />}

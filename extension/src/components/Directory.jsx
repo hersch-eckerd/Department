@@ -3,6 +3,7 @@ import { Typography } from '@ellucian/react-design-system/core';
 import { spacing40 } from '@ellucian/react-design-system/core/styles/tokens';
 import {  useData } from '@ellucian/experience-extension-utils';
 import PropTypes from 'prop-types';
+import axios from 'axios';
 import React, { useEffect, useState } from 'react';
 
 const styles = () => ({
@@ -18,38 +19,23 @@ function Directory({config}) {
     // with the getExtensionJwt function.
     const { getExtensionJwt } = useData();
 
-    useEffect(() => {
-      async function fetchJwtAndData() {
-        const newJwt = await getExtensionJwt();
-        setJwt(newJwt);
-
-        if(newJwt) {
-          const response = await fetch('http://localhost:3000/api/directory', {
-            method: 'GET',
-            headers: {
-              'Authorization': `Bearer ${newJwt}`,
-              'Content-Type': 'application/json'
-            }
-          });
-
-          if(response.ok) {
-            const data = await response.json();
-            setServerResponse(data);
-          } else {
-            console.error('Failed to fetch data from server');
-          }
-        }
+    useEffect(async () => {
+      const newJwt = await getExtensionJwt()
+      const headers = {
+        'Authorization': `Bearer ${newJwt}`,
+        'Content-Type': 'application/json'
       }
-
-      fetchJwtAndData();
-    }, [getExtensionJwt, dirCode, apiKey]);
+      axios('http://localhost:3000/api/jitbit-auth', headers)
+        .then(response => {console.log(response)})
+        .catch(error => {console.log(error)});
+    }, []);
 
     return (
-      <div>
+      <>
         <h1>Your Component</h1>
         {jwt && <p>Your JWT: {jwt}</p>}
         {serverResponse && <p>Your data: {JSON.stringify(serverResponse)}</p>}
-      </div>
+      </>
     );
   }
 
