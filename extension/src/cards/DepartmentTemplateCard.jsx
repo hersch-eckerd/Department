@@ -98,8 +98,7 @@ const DepartmentTemplateCard = ({ classes }) => {
         params['user-group'] = ids
     }
     useEffect( async () => {
-        const deptInfo = [axios.get('/user-group'), axios.get('/media/'+ department.acf.featuredImage)]
-        await axios.all(deptInfo)
+        await axios.all([axios.get('/user-group'), axios.get('/media/'+ department.acf.featuredImage)])
         .then(axios.spread((groups, image) => {
             compareGroups(groups.data)
             setBackgroundURL(image.data.media_details.sizes.medium.source_url)
@@ -141,9 +140,7 @@ const DepartmentTemplateCard = ({ classes }) => {
                 {value == 'Summary' && <Summary department={department} />}
                 {value == 'Resources' && <ResourceList resources={resources} fontColor={'white'} />}
                 {value == 'Blog' && <Blog category={customConfiguration?.category} />}
-                {value == 'Contact' && <Contact
-                    contactInfo={department.acf}
-                    textColor={'white'} />}
+                {value == 'Contact' && <Contact contactInfo={department.acf} textColor={'white'} />}
             </div>
         </Grid>
     )

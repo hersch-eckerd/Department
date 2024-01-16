@@ -4,7 +4,7 @@ report.xml
 build/**
 .DS_Store
 *.log
-.env
+.env*
 bak
 report.tap
 local
@@ -19,3 +19,5 @@ tmp
 .eslintcache
 env.prod
 env.test
+package-lock.json
+```
