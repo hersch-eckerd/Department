@@ -6,75 +6,50 @@ import { FormGroup, Typography, Grid, Radio, RadioGroup, FormControlLabel, Check
 import { useUserInfo, usePageControl } from '@ellucian/experience-extension-utils';
 import axios from 'axios';
 
-const styles = () => ({})
 const Resources = () => {
-    const { setLoadingStatus } = usePageControl()
     const {roles} = useUserInfo()
-    const [params, setParams] = useState({
-        'resource-tag': [],
-        'department': '',
-        'user-group': [],
-        'orderby': 'title',
-        'order': 'asc',
-        'per_page': 100,
-        '_fields': 'id,acf,title.rendered'
-    });
-    const [departments, setDepartments] = useState()
     const [resources, setResources] = useState([])
-    const [checkboxes, setCheckboxes] = useState([0])
     const [search, setSearch] = useState('')
-    const [popper, setPopper] = useState({anchorEl: null, open: false, index: null})
+    const [departments, setDepartments] = useState()
+    const [checkboxes, setCheckboxes] = useState([0])
+    const [params, setParams] =useState({
+        'per_page': 100,
+        'order': 'asc'
+    })
     const url = process.env.WORDPRESS_URL + `/wp-json/wp/v2`;
-    const compareGroups = (groups) => {
-        const ids = []
-        groups.forEach(item => {
-            if (roles.includes(item.name)) {
-                ids.push(item.id)
-            }
-        });
-        setParams({...params, 'user-group': ids})
+    const fetchResources = async () => {
+        const response = await axios(`${url}/resources`, { params });
+        if (response.data.length === 100) {
+            const nextResponse = await axios.get(`${url}/resources`, { params: {...params, 'page': 2} });
+            response.data = response.data.concat(nextResponse.data);
+        }
+        setResources(response.data)
     }
+
     const handleCheckboxChange = (event, id) => {
         // Update checkbox checked state
-        setCheckboxes(checkboxes.map(item =>
-          item.id === id ? {...item, checked: event.target.checked} : item
-        ));
+        setCheckboxes(checkboxes.map(item => item.id === id ? {...item, checked: event.target.checked} : item ));
         // Update params state
-        if(event.target.checked) {
-          setParams(prevState => ({...prevState, 'resource-tag': [...prevState['resource-tag'], id]}));
-        } else {
-          setParams(prevState => ({...prevState, 'resource-tag': prevState['resource-tag'].filter(tag => tag !== id)}));
-        }
+        if (event.target.checked) {setParams(prevState => ({...prevState, 'resource-tag': [...prevState['resource-tag'], id]}))}
+        else { setParams(prevState => ({...prevState, 'resource-tag': prevState['resource-tag'].filter(tag => tag !== id)}))}
     }
     useEffect(() => {
-        axios.get(url + '/user-group')
-        .then(response => {compareGroups(response.data)})
-        axios.get(url + `/department?per_page=100`)
-        .then(response => {setDepartments(response.data)})
-        axios.get(url + `/resource-tag?per_page=100`)
-        .then(response => {setCheckboxes(response.data.map(post => ({id: post.id, name: post.name, checked: false})))})
+        axios.all([axios(url + '/user-group'), axios(url + `/department?per_page=100`), axios(url + `/resource-tag?per_page=100`)])
+        .then(axios.spread((groups, departments, tags) => {
+            setDepartments(departments.data)
+            setCheckboxes(tags.data.map(post => ({id: post.id, name: post.name, checked: false})))
+            setParams({...params, 'user-group': groups.data.filter(group => roles.includes(group.name)).map(group => group.id)})
+        }))
+        .then(() => {fetchResources()})
     }, [])
-    useEffect(async () => {
-        setLoadingStatus(true);
-        if (search.length > 0 && search !== '') {
-            axios.get(url + `/resources?search=${search}&per_page=100&_fields=id,acf.resource_url,title.rendered&user-group=${params['user-group']}`)
-            .then(response => {setResources(response.data)})
-        } else {
-            if (params.department == 0) {delete params.department}
-            const resources = []
-            await axios.get(url + `/resources`, {params: params})
-            .then(async response => {
-                resources.push(...response.data)
-                if (resources.length == 100) {
-                    await axios.get(url +'/resources', {params: {...params, page: 2}})
-                    .then(response => {
-                        resources.push(...response.data)
-                    })
-                }
-            })
-            setResources(resources)
-        }
-        setLoadingStatus(false);
+    useEffect( () => {
+        const params = {
+            'orderby': 'title',
+            '_fields': 'id,acf,title.rendered',
+            'department': '',
+            ...(search && {search})
+        };
+        fetchResources(params)
     }, [params, search])
 
     return (
@@ -147,4 +122,4 @@ Resources.propTypes = {
     classes: PropTypes.object
 };
 
-export default withStyles(styles)(Resources);
+export default (Resources);

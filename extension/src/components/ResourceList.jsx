@@ -52,7 +52,6 @@ const ResourceList = ({ resources, classes, fontColor }) => {
         default:
             return (
                 <List className={classes.resourceList} id="ResourceList">
-                    <Typography variant='h3' color={color}>Resources</Typography>
                     {resources.map((resource, index) => (
                         <ListItem button component="a" className={classes.resourceItem} href={resource.acf.resource_url} key={resource.title.rendered} divider>
                             <Typography style={{'color':color}} >

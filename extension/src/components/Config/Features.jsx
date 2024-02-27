@@ -11,7 +11,7 @@ const styles = () => ({
 });
 
 const Features = ({ classes, setConfig, config }) => {
-    const features = ["Contact", "Blog", "Directory", "Forms", "Image"]
+    const features = ['Summary', 'Resources', 'Contact', 'Blog']
     const handleFeature = name => event => {
         setConfig({
             ...config,
@@ -24,7 +24,7 @@ const Features = ({ classes, setConfig, config }) => {
             }
         })
     }
-    return  <FormControl component="fieldset" className={classes.features}>
+    return <FormControl component="fieldset" className={classes.features}>
                 <FormGroup row={true}>
                     {features.map(feature => (
                         <FormControlLabel

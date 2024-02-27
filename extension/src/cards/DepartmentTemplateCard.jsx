@@ -6,7 +6,7 @@ import ResourceList from '../components/ResourceList';
 import { Button, Typography, Grid, Dropdown, DropdownItem } from '@ellucian/react-design-system/core';
 import { ChevronRight, ClipboardList } from '@ellucian/ds-icons/lib';
 import Blog from '../components/Blog';
-import { useCardInfo, useUserInfo, useCardControl } from '@ellucian/experience-extension-utils';
+import { useCardInfo, useUserInfo } from '@ellucian/experience-extension-utils';
 import axios from 'axios';
 
 const styles = () => ({
@@ -40,8 +40,8 @@ const styles = () => ({
         marginTop: 20
     }
 })
-const Summary = (department) => {
-    const {acf, description} = department.department;
+const Summary = ({department}) => {
+    const {acf, description} = department;
     const URL = acf.websiteHomepage
     return (
         <>
@@ -70,45 +70,45 @@ const Contact = ({contactInfo, textColor}) => {
 }
 const DepartmentTemplateCard = ({ classes }) => {
     // get config info and destruct into variables
-    const { configuration: { customConfiguration }} = useCardInfo();
-    const department = customConfiguration?.department;
-    const {setLoadingStatus} = useCardControl();
-    // set up parameters for the api call
-    const params = {
-        'user-group': [],
-        'department': department?.id,
-        'orderby': 'title',
-        'order': 'asc',
-        'per_page': 100,
-        '_fields': 'id,acf.resource_url,title.rendered'
-    };
+    const { configuration: { customConfiguration }} = useCardInfo()
     const {roles} = useUserInfo();
+
     const [resources, setResources] = useState();
     const [backgroundURL, setBackgroundURL] = useState();
     const [value, setValue] = useState('Resources');
+
+    const {department} = customConfiguration;
+    // set up parameters for the api call
+
     const features = ['Summary', 'Resources', 'Contact', 'Blog']
-    axios.defaults.baseURL = process.env.WORDPRESS_URL + `/wp-json/wp/v2`
-    const compareGroups = (groups) => {
-        const ids = []
-        groups.forEach(item => {
-            if (roles.includes(item.name)) {
-                ids.push(item.id)
-            }
-        });
-        params['user-group'] = ids
+    const url = process.env.WORDPRESS_URL + `/wp-json/wp/v2`
+    const fetchResources = async ({groups}) => {
+        const params = {
+            'user-group': groups,
+            'department': department?.id,
+            'orderby': 'title',
+            'order': 'asc',
+            'per_page': 100,
+            '_fields': 'id,acf,title.rendered'
+        };
+        const response = await axios.get(`${url}/resources`, { params });
+        if (response.data.length === 100) {
+            const nextResponse = await axios.get(`${url}/resources`, { params: {...params, 'page': 2} });
+            response.data = response.data.concat(nextResponse.data);
+        }
+        setResources(response.data)
     }
-    useEffect( async () => {
-        await axios.all([axios.get('/user-group'), axios.get('/media/'+ department.acf.featuredImage)])
+
+    useEffect(() => {
+        axios.all([axios.get(`${url}/user-group`), axios.get(`${url}/media/`+ department.acf.featuredImage)])
         .then(axios.spread((groups, image) => {
-            compareGroups(groups.data)
             setBackgroundURL(image.data.media_details.sizes.medium.source_url)
-        }))
-        .then(async () => {
-            const response = await axios.get(`/resources`, {params:params})
-            setResources(response.data)
-            setLoadingStatus(false)
-        })
-    }, [] )
+            return groups.data.filter(group => roles.includes(group.name)).map(group => group.id)
+            }
+        ))
+        .then(groups => {fetchResources(groups)})
+    }, [roles])
+
     return (
         <Grid className={classes.card}>
             <div
@@ -126,16 +126,16 @@ const DepartmentTemplateCard = ({ classes }) => {
                     label="Department Information"
                     onChange={(e) => setValue(e.target.value)}
                     className={classes.dropDown}
-                    value={value}
-                    >
-                        {features.map((item) => {return (
-                            <DropdownItem
-                                key={item}
-                                id={item}
-                                label={item}
-                                value={item}
-                                RightIconComponent= { <ChevronRight /> } />
-                        )})}
+                    value={value} >
+                    {features.map((item) =>
+                        <DropdownItem
+                            key={item}
+                            id={item}
+                            label={item}
+                            value={item}
+                            RightIconComponent= { <ChevronRight /> }
+                        />
+                    )}
                 </Dropdown>
                 {value == 'Summary' && <Summary department={department} />}
                 {value == 'Resources' && <ResourceList resources={resources} fontColor={'white'} />}

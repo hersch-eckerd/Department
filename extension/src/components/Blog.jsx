@@ -21,14 +21,10 @@ const Blog = ({classes, category}) => {
     useEffect(() => {
         axios(url)
         .then(response => {setPosts(response.data)})
-        .catch(error => {setPosts([])});
+        .catch(() => {setPosts([])});
     }, [category]);
-    switch (posts.length) {
-        case 0:
-            return <Typography variant="h3">No posts found</Typography>;
-        default:
-            return (
-            <List>
+    return !posts.length ? <Typography variant="h3">No posts found</Typography>
+    : <List>
             {posts.map(post => (
                 <ListItem className={classes.blogPost} key={post.id} divider>
                     <Typography variant="h3">
@@ -38,9 +34,7 @@ const Blog = ({classes, category}) => {
                     </Typography>
                     <Typography variant="v4">{moment(post.date).format("Do MMM YYYY h:mm a")}</Typography>
                 </ListItem> ))}
-            </List>
-        );
-    }
+        </List>
 }
 Blog.propTypes = {
     classes: PropTypes.object.isRequired,
