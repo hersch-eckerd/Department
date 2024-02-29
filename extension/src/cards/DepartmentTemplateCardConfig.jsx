@@ -1,7 +1,7 @@
 import React, {useEffect, useState} from 'react';
 import PropTypes from 'prop-types';
 import { withStyles } from '@ellucian/react-design-system/core/styles';
-import { Checkbox, TextField, Typography,  Grid, Radio, RadioGroup, TextLink, FormControlLabel } from '@ellucian/react-design-system/core';
+import { Checkbox, Typography,  Grid, Radio, RadioGroup, FormControlLabel } from '@ellucian/react-design-system/core';
 import ResourceList from '../components/ResourceList.jsx';
 import Features from '../components/Config/Features.jsx';
 import axios from 'axios';
@@ -55,6 +55,9 @@ const DeptConfig = ({handleChange, deptList, department}) =>
         </RadioGroup>
     </>
 const DepartmentTemplateCardConfig = ({cardControl:{setCustomConfiguration}, cardInfo: {configuration: {customConfiguration}}, classes}) => {
+    const [departments, setDepartments] = useState([])
+    const [resources, setResources] = useState([])
+    const [categories, setCategories] = useState([])
     const [config, setConfig] = useState(customConfiguration ? customConfiguration : {
         client: {
             features: {
@@ -67,18 +70,16 @@ const DepartmentTemplateCardConfig = ({cardControl:{setCustomConfiguration}, car
             category: []
         }
     })
+    const { department} = config.client;
+    const url = process.env.WORDPRESS_URL + `wp-json/wp/v2`
+    axios.defaults.baseURL = url;
     axios.defaults.params = {
         'order': 'asc',
         'per_page': 100
     }
-    const { department} = config.client;
-    const [departments, setDepartments] = useState([])
-    const [resources, setResources] = useState([])
-    const [categories, setCategories] = useState([])
-    const url = process.env.WORDPRESS_URL + `/wp-json/wp/v2`
 
     useEffect( () => {
-        axios.all([axios.get(`${url}/department`), axios.get(`${url}/categories`)])
+        axios.all([axios(`/department`), axios(`/categories`)])
         .then(axios.spread((departments, categories) => {
             setDepartments(departments.data)
             setCategories(categories.data)
@@ -88,12 +89,12 @@ const DepartmentTemplateCardConfig = ({cardControl:{setCustomConfiguration}, car
     useEffect(() => {setCustomConfiguration({customConfiguration: config})}, [config])
 
     const fetchResources = async () => {
-        const response = await axios.get(`${url}/resources`, { params: {
+        const response = await axios(`/resources`, { params: {
             'department': department.id,
             'orderby': 'title'
         }});
         if (response.data.length === 100) {
-            const nextResponse = await axios.get(`${url}/resources`, { params: { 'page': 2} });
+            const nextResponse = await axios(`/resources`, { params: { 'page': 2} });
             response.data = response.data.concat(nextResponse.data);
         }
         setResources(response.data);
@@ -125,12 +126,8 @@ const DepartmentTemplateCardConfig = ({cardControl:{setCustomConfiguration}, car
                 config={config}
                 setConfig={setConfig}
                 classes={classes} />
-            {departments.length > 0 &&
-                <DeptConfig handleChange={handleChange} deptList={departments} department={department} />
-            }
-            {config.client.features.blog && categories.length > 0 &&
-                <BlogConfig handleCheckbox={handleCheckbox} categories={categories} config={config} />
-            }
+            {departments.length > 0 && <DeptConfig handleChange={handleChange} deptList={departments} department={department} /> }
+            {config.client.features.blog && categories.length > 0 && <BlogConfig handleCheckbox={handleCheckbox} categories={categories} config={config} /> }
             {resources.length > 0 &&
                 <ResourceList
                     resources={resources}

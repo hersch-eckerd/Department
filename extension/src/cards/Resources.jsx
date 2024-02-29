@@ -21,7 +21,7 @@ const resourceCard = ( { classes, cardControl: { navigateToPage }}) => {
     const {roles} = useUserInfo();
     const [resources, setResources] = useState();
     const [search, setSearch] = useState('')
-    const url = process.env.WORDPRESS_URL + `/wp-json/wp/v2`;
+    const url = process.env.WORDPRESS_URL + `wp-json/wp/v2`;
 
     const fetchResources = async ({groups}) => {
         const params = {

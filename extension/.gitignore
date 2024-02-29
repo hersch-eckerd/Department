@@ -17,7 +17,7 @@ client_report.xml
 tmp
 .vscode
 .eslintcache
-env.prod
-env.test
+.env.prod
+.env.test
 package-lock.json
 ```

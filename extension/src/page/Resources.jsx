@@ -12,29 +12,46 @@ const Resources = () => {
     const [search, setSearch] = useState('')
     const [departments, setDepartments] = useState()
     const [checkboxes, setCheckboxes] = useState([0])
-    const [params, setParams] =useState({
+    const url = process.env.WORDPRESS_URL + `wp-json/wp/v2`;
+    axios.defaults.baseURL = url;
+    axios.defaults.params = {
         'per_page': 100,
-        'order': 'asc'
-    })
-    const url = process.env.WORDPRESS_URL + `/wp-json/wp/v2`;
+        'order': 'asc',
+        'resource-tag': [],
+        'user-group': []
+    }
+    const [params, setParams] = useState({
+        '_fields': 'id,acf,title.rendered',
+        'department': 0,
+        'orderby': 'title',
+        ...(search && {search})
+    });
     const fetchResources = async () => {
-        const response = await axios(`${url}/resources`, { params });
+        const response = await axios(`/resources`, { params });
         if (response.data.length === 100) {
-            const nextResponse = await axios.get(`${url}/resources`, { params: {...params, 'page': 2} });
+            const nextResponse = await axios(`/resources`, {params: {...params, 'page': 2} });
             response.data = response.data.concat(nextResponse.data);
         }
         setResources(response.data)
     }
-
     const handleCheckboxChange = (event, id) => {
         // Update checkbox checked state
         setCheckboxes(checkboxes.map(item => item.id === id ? {...item, checked: event.target.checked} : item ));
         // Update params state
-        if (event.target.checked) {setParams(prevState => ({...prevState, 'resource-tag': [...prevState['resource-tag'], id]}))}
-        else { setParams(prevState => ({...prevState, 'resource-tag': prevState['resource-tag'].filter(tag => tag !== id)}))}
+        if (event.target.checked) {
+            setParams(prevState => ({
+                ...prevState,
+                'resource-tag': [...prevState['resource-tag'], id]}))
+        }
+        else {
+            setParams(prevState => ({
+                ...prevState,
+                'resource-tag': prevState['resource-tag'].filter(tag => tag !== id)
+            }))
+        }
     }
     useEffect(() => {
-        axios.all([axios(url + '/user-group'), axios(url + `/department?per_page=100`), axios(url + `/resource-tag?per_page=100`)])
+        axios.all([axios('/user-group'), axios(`/department`), axios(`/resource-tag`)])
         .then(axios.spread((groups, departments, tags) => {
             setDepartments(departments.data)
             setCheckboxes(tags.data.map(post => ({id: post.id, name: post.name, checked: false})))
@@ -42,15 +59,7 @@ const Resources = () => {
         }))
         .then(() => {fetchResources()})
     }, [])
-    useEffect( () => {
-        const params = {
-            'orderby': 'title',
-            '_fields': 'id,acf,title.rendered',
-            'department': '',
-            ...(search && {search})
-        };
-        fetchResources(params)
-    }, [params, search])
+    useEffect( () => {fetchResources()}, [search, params])
 
     return (
         <Grid>
@@ -101,7 +110,7 @@ const Resources = () => {
                         <FormControlLabel
                             control={
                                 <Checkbox
-                                    checked={params['resource-tag'].includes(tag.id)}
+                                    checked={params['resource-tag']?.includes(tag.id)}
                                     onChange={(event) => handleCheckboxChange(event, tag.id)}
                                     value={tag.id}
                                 />

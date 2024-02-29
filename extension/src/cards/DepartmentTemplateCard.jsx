@@ -72,35 +72,36 @@ const DepartmentTemplateCard = ({ classes }) => {
     // get config info and destruct into variables
     const { configuration: { customConfiguration }} = useCardInfo()
     const {roles} = useUserInfo();
-
     const [resources, setResources] = useState();
     const [backgroundURL, setBackgroundURL] = useState();
     const [value, setValue] = useState('Resources');
-
-    const {department} = customConfiguration;
+    const {department, category} = customConfiguration;
     // set up parameters for the api call
 
     const features = ['Summary', 'Resources', 'Contact', 'Blog']
-    const url = process.env.WORDPRESS_URL + `/wp-json/wp/v2`
-    const fetchResources = async ({groups}) => {
+    const url = process.env.WORDPRESS_URL + `wp-json/wp/v2`
+    axios.defaults.baseURL = url;
+    axios.defaults.params = {
+        'order': 'asc',
+        'per_page': 100
+    }
+    const fetchResources = async (groups) => {
         const params = {
             'user-group': groups,
             'department': department?.id,
             'orderby': 'title',
-            'order': 'asc',
-            'per_page': 100,
             '_fields': 'id,acf,title.rendered'
         };
-        const response = await axios.get(`${url}/resources`, { params });
+        const response = await axios(`/resources`, { params });
         if (response.data.length === 100) {
-            const nextResponse = await axios.get(`${url}/resources`, { params: {...params, 'page': 2} });
+            const nextResponse = await axios(`/resources`, { params: {...params, 'page': 2} });
             response.data = response.data.concat(nextResponse.data);
         }
         setResources(response.data)
     }
 
     useEffect(() => {
-        axios.all([axios.get(`${url}/user-group`), axios.get(`${url}/media/`+ department.acf.featuredImage)])
+        axios.all([axios(`/user-group`), axios(`/media/`+ department.acf.featuredImage)])
         .then(axios.spread((groups, image) => {
             setBackgroundURL(image.data.media_details.sizes.medium.source_url)
             return groups.data.filter(group => roles.includes(group.name)).map(group => group.id)
@@ -139,7 +140,7 @@ const DepartmentTemplateCard = ({ classes }) => {
                 </Dropdown>
                 {value == 'Summary' && <Summary department={department} />}
                 {value == 'Resources' && <ResourceList resources={resources} fontColor={'white'} />}
-                {value == 'Blog' && <Blog category={customConfiguration?.category} />}
+                {value == 'Blog' && <Blog category={category} />}
                 {value == 'Contact' && <Contact contactInfo={department.acf} textColor={'white'} />}
             </div>
         </Grid>
