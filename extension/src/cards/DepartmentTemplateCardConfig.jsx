@@ -118,24 +118,22 @@ const DepartmentTemplateCardConfig = ({cardControl:{setCustomConfiguration}, car
             }
         }));
     };
-    return (
-        <Grid className={classes.card} direction="column" justifyContent="space-between" alignItems="flex-start">
-            <Typography variant='h3'>Features</Typography>
-            <Typography>Select the features you would like to display on the department card</Typography>
-            <Features
-                config={config}
-                setConfig={setConfig}
-                classes={classes} />
-            {departments.length > 0 && <DeptConfig handleChange={handleChange} deptList={departments} department={department} /> }
-            {config.client.features.blog && categories.length > 0 && <BlogConfig handleCheckbox={handleCheckbox} categories={categories} config={config} /> }
-            {resources.length > 0 &&
-                <ResourceList
-                    resources={resources}
-                    classes={classes}
-                    fontColor={'black'} />
-                    }
-        </Grid>
-    );
+    return  <Grid className={classes.card} direction="column" justifyContent="space-between" alignItems="flex-start">
+                <Typography variant='h3'>Features</Typography>
+                <Typography>Select the features you would like to display on the department card</Typography>
+                <Features
+                    config={config}
+                    setConfig={setConfig}
+                    classes={classes} />
+                {departments.length > 0 && <DeptConfig handleChange={handleChange} deptList={departments} department={department} /> }
+                {config.client.features.blog && categories.length > 0 && <BlogConfig handleCheckbox={handleCheckbox} categories={categories} config={config} /> }
+                {resources.length > 0 &&
+                    <ResourceList
+                        resources={resources}
+                        classes={classes}
+                        fontColor={'black'} />
+                        }
+            </Grid> 
 };
 DepartmentTemplateCardConfig.propTypes = {
     cardControl: PropTypes.object,
