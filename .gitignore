@@ -4,6 +4,6 @@ extension/.env
 microservice/.env.test
 microservice/.env.prod
 microservice/.env
-
+*.env*
 node_modules/
 .webpack/

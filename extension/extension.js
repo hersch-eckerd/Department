@@ -1,6 +1,6 @@
 module.exports = {
     "name": "Organization",
-    "publisher": "EckerdCollege",
+    "publisher": "Eckerd College",
     "cards": [{
         "type": "OrganizationTemplate",
         "source": "./src/cards/DepartmentTemplateCard",
