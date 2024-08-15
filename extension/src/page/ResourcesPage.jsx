@@ -1,12 +1,10 @@
 import React, {useEffect, useState} from 'react';
-import PropTypes from 'prop-types';
-import { withStyles } from '@ellucian/react-design-system/core/styles';
-import ResourceList from '../components/ResourceList';
+import Resources from '../components/Resources';
 import { FormGroup, Typography, Grid, Radio, RadioGroup, FormControlLabel, Checkbox, TextField } from '@ellucian/react-design-system/core';
-import { useUserInfo, usePageControl } from '@ellucian/experience-extension-utils';
+import { useUserInfo } from '@ellucian/experience-extension-utils';
 import axios from 'axios';
 
-const Resources = () => {
+const ResourcesPage = () => {
     const {roles} = useUserInfo()
     const [resources, setResources] = useState([])
     const [search, setSearch] = useState('')
@@ -122,13 +120,9 @@ const Resources = () => {
                     ))}
                 </FormGroup>
             </>}
-            <ResourceList resources={resources} />
+            <Resources resources={resources} />
         </Grid>
     )
 }
 
-Resources.propTypes = {
-    classes: PropTypes.object
-};
-
-export default (Resources);
+export default (ResourcesPage);

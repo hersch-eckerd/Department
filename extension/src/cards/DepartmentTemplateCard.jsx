@@ -2,12 +2,12 @@ import PropTypes from 'prop-types';
 import React, { useEffect, useState } from 'react';
 import moment from 'moment';
 import { withStyles } from '@ellucian/react-design-system/core/styles';
-import ResourceList from '../components/ResourceList';
+import Resources from '../components/Resources';
 import { Button, Typography, Grid, Dropdown, DropdownItem } from '@ellucian/react-design-system/core';
-import { ChevronRight, ClipboardList } from '@ellucian/ds-icons/lib';
+import { ChevronRight } from '@ellucian/ds-icons/lib';
 import Blog from '../components/Blog';
 import { useCardInfo, useUserInfo } from '@ellucian/experience-extension-utils';
-import axios from 'axios';
+import axios  from 'axios';
 
 const styles = () => ({
     card: {
@@ -46,7 +46,7 @@ const Summary = ({department}) => {
     return (
         <>
             <Typography variant="h4" color='white' >{description}</Typography>
-            <Button href={URL} style={{ marginTop:20 }}>Visit Site</Button>
+            {URL && <Button href={URL} style={{ marginTop:20 }}>Visit Site</Button>}
         </>
     )
 }
@@ -76,8 +76,6 @@ const DepartmentTemplateCard = ({ classes }) => {
     const [backgroundURL, setBackgroundURL] = useState();
     const [value, setValue] = useState('Resources');
     const {department, category} = customConfiguration;
-    // set up parameters for the api call
-
     const features = ['Summary', 'Resources', 'Contact', 'Blog']
     const url = process.env.WORDPRESS_URL + `wp-json/wp/v2`
     axios.defaults.baseURL = url;
@@ -128,7 +126,7 @@ const DepartmentTemplateCard = ({ classes }) => {
                     onChange={(e) => setValue(e.target.value)}
                     className={classes.dropDown}
                     value={value} >
-                    {features.map((item) =>
+                        {features.map((item) =>
                         <DropdownItem
                             key={item}
                             id={item}
@@ -136,10 +134,10 @@ const DepartmentTemplateCard = ({ classes }) => {
                             value={item}
                             RightIconComponent= { <ChevronRight /> }
                         />
-                    )}
-                </Dropdown>
+                        )}
+                    </Dropdown>
                 {value == 'Summary' && <Summary department={department} />}
-                {value == 'Resources' && <ResourceList resources={resources} fontColor={'white'} />}
+                {value == 'Resources' && <Resources resources={resources} fontColor={'white'} />}
                 {value == 'Blog' && <Blog category={category} />}
                 {value == 'Contact' && <Contact contactInfo={department.acf} textColor={'white'} />}
             </div>
@@ -153,7 +151,6 @@ DepartmentTemplateCard.propTypes = {
 Summary.propTypes = {
     description: PropTypes.string,
     acf: PropTypes.object,
-    textColor: PropTypes.string,
     department: PropTypes.object
 }
 
@@ -161,7 +158,7 @@ Contact.propTypes = {
     contactInfo: PropTypes.object,
     textColor: PropTypes.string
 }
-ResourceList.propTypes = {
+Resources.propTypes = {
     classes: PropTypes.object.isRequired,
     resources: PropTypes.array.isRequired
 }

@@ -3,7 +3,7 @@ import React, { useEffect, useState } from 'react';
 import { withStyles } from '@ellucian/react-design-system/core/styles';
 import { Button, Grid, TextField } from '@ellucian/react-design-system/core';
 import { useUserInfo } from '@ellucian/experience-extension-utils';
-import ResourceList from '../components/ResourceList';
+import Resources from '../components/Resources';
 import axios from 'axios';
 
 const styles = () => ({
@@ -56,7 +56,7 @@ const resourceCard = ( { classes, cardControl: { navigateToPage }}) => {
                     onChange={(e) => setSearch(e.target.value)} />
                 <Button style= {{width: '30%' }} onClick={() => navigateToPage({route: '/resources'})} >View All</Button>
             </Grid>
-            <ResourceList resources={resources} />
+            <Resources resources={resources} />
         </div>
     )
 };

@@ -5,7 +5,7 @@ import {
     Switch,
     Route
 } from "react-router-dom";
-import Resources from "./Resources";
+import ResourcesPage from "./ResourcesPage"
 
 // for more information on react router: https://v5.reactrouter.com/web/guides/quick-start
 
@@ -14,7 +14,7 @@ const RouterPage = (props) => {
         <Router basename={props.pageInfo.basePath}>
             <Switch>
                 <Route path="/resources">
-                    <Resources {...props} />
+                    <ResourcesPage {...props} />
                 </Route>
             </Switch>
         </Router>
