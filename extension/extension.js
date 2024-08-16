@@ -13,12 +13,12 @@ module.exports = {
             "description": "Provides the ability to create custom Organization cards"
         },
         "customConfiguration": {
-            "source": "./src/cards/DepartmentTemplateCardConfig.jsx"
+            "source": "./src/components/Config/TemplateConfig.jsx"
         }
     }, 
     {
         "type": "Resources",
-        "source": "./src/cards/Resources",
+        "source": "./src/cards/ResourcesCard",
         "title": "Resources",
         "displayCardType": "Organization",
         "description": "Shows all resources available to the user",

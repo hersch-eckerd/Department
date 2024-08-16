@@ -15,8 +15,6 @@ function Directory({config}) {
     const [jwt, setJwt] = useState(null);
     const [serverResponse, setServerResponse] = useState(null);
 
-    // Assuming useData is a custom hook that returns an object
-    // with the getExtensionJwt function.
     const { getExtensionJwt } = useData();
 
     useEffect(async () => {

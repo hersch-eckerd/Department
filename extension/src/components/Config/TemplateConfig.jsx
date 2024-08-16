@@ -1,9 +1,9 @@
 import React, {useEffect, useState} from 'react';
 import PropTypes from 'prop-types';
 import { withStyles } from '@ellucian/react-design-system/core/styles';
-import { Checkbox, Typography,  Grid, Radio, RadioGroup, FormControlLabel } from '@ellucian/react-design-system/core';
-import ResourceList from '../components/ResourceList.jsx';
-import Features from '../components/Config/Features.jsx';
+import { Typography,  Grid } from '@ellucian/react-design-system/core';
+import Resources from '../Resources.jsx';
+import {Features, DeptConfig, BlogConfig} from './index.js';
 import axios from 'axios';
 const styles = () => ({
     input: {
@@ -13,48 +13,7 @@ const styles = () => ({
     }
 });
 
-const BlogConfig = ({config, handleCheckbox, categories}) =>
-    <>
-        <Typography variant='h3'>Blog Categories</Typography>
-        <Typography>Select the Blog Categories you would like to display</Typography>
-            {categories.map((wpcategory) => {
-                const checked = config.client.category ? config.client.category.includes(wpcategory.id) : false;
-                return (
-                <FormControlLabel
-                    control={
-                        <Checkbox
-                            checked={checked}
-                            onChange={(e) => handleCheckbox(wpcategory.id)}
-                            value={wpcategory.name}
-                            /> }
-                    label={wpcategory.name}
-                    key={wpcategory.name}
-                    value={JSON.stringify(wpcategory.id)}/>
-            )})}
-    </>
-const DeptConfig = ({handleChange, deptList, department}) =>
-    <>
-        <Typography variant='h3'>Department</Typography>
-        <Typography>Select the department you would like to display</Typography>
-        <RadioGroup
-            id="DepartmentsChoice"
-            name="DepartmentsChoice"
-            value={department.id || ''}
-            onChange={handleChange}
-            required
-            row
-        >
-            {deptList.map((dept) => (
-                <FormControlLabel
-                    control={<Radio />}
-                    label={dept.name}
-                    key={dept.id}
-                    value={dept.id}
-                />
-            ))}
-        </RadioGroup>
-    </>
-const DepartmentTemplateCardConfig = ({cardControl:{setCustomConfiguration}, cardInfo: {configuration: {customConfiguration}}, classes}) => {
+const TemplateConfig = ({cardControl:{setCustomConfiguration}, cardInfo: {configuration: {customConfiguration}}, classes}) => {
     const [departments, setDepartments] = useState([])
     const [resources, setResources] = useState([])
     const [categories, setCategories] = useState([])
@@ -128,28 +87,19 @@ const DepartmentTemplateCardConfig = ({cardControl:{setCustomConfiguration}, car
                 {departments.length > 0 && <DeptConfig handleChange={handleChange} deptList={departments} department={department} /> }
                 {config.client.features.blog && categories.length > 0 && <BlogConfig handleCheckbox={handleCheckbox} categories={categories} config={config} /> }
                 {resources.length > 0 &&
-                    <ResourceList
+                    <Resources
                         resources={resources}
                         classes={classes}
                         fontColor={'black'} />
-                        }
-            </Grid> 
+                    }
+            </Grid>
 };
-DepartmentTemplateCardConfig.propTypes = {
+TemplateConfig.propTypes = {
     cardControl: PropTypes.object,
     cardInfo: PropTypes.object,
     classes: PropTypes.object
 };
 
-BlogConfig.propTypes = {
-    categories: PropTypes.array,
-    config: PropTypes.object,
-    handleCheckbox: PropTypes.func
-};
+export default withStyles(styles)(TemplateConfig
 
-DeptConfig.propTypes = {
-    deptList: PropTypes.array,
-    handleChange: PropTypes.func,
-    department: PropTypes.object
-};
-export default withStyles(styles)(DepartmentTemplateCardConfig);
+);
