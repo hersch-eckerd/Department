@@ -1,6 +1,4 @@
 import { withStyles } from '@ellucian/react-design-system/core/styles';
-import { Typography } from '@ellucian/react-design-system/core';
-import { spacing40 } from '@ellucian/react-design-system/core/styles/tokens';
 import {  useData } from '@ellucian/experience-extension-utils';
 import PropTypes from 'prop-types';
 import axios from 'axios';

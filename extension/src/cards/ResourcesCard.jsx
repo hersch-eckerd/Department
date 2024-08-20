@@ -17,51 +17,50 @@ const styles = () => ({
         paddingBottom: '20px'
     }
 })
-const resourceCard = ( { classes, cardControl: { navigateToPage }}) => {
+const ResourcesCard = ( { classes, cardControl: { navigateToPage }}) => {
+    const [search, setSearch] = useState('')
     const {roles} = useUserInfo();
     const [resources, setResources] = useState();
-    const [search, setSearch] = useState('')
-    const url = process.env.WORDPRESS_URL + `wp-json/wp/v2`;
+    const url = process.env.WORDPRESS_URL + `wp-json/wp/v2`
+    axios.defaults.baseURL = url;
 
-    const fetchResources = async ({groups}) => {
+    const fetchResources = async (groups) => {
         const params = {
-            'user-group': groups,
+            'user-group': groups.join(','),
             'orderby': 'title',
-            'order': 'asc',
-            'per_page': 100,
             '_fields': 'id,acf,title.rendered',
-            ...(search && {search})
+            'order': 'asc',
+            'per_page': 100
         };
-        const response = await axios(`${url}/resources`, { params });
+        const response = await axios(`/resources`, { params });
         if (response.data.length === 100) {
-            const nextResponse = await axios.get(`${url}/resources`, { params: {...params, 'page': 2} });
+            const nextResponse = await axios(`/resources`, { params: {...params, 'page': 2} });
             response.data = response.data.concat(nextResponse.data);
         }
         setResources(response.data)
     }
 
     useEffect(() => {
-        axios.get(`${url}/user-group`)
-        .then(response => response.data.filter(group => roles.includes(group.name)).map(group => group.id))
+        axios(`/user-group`)
+        .then(groups => groups.data.filter(group => roles.includes(group.name)).map(group => group.id))
         .then(groups => fetchResources(groups))
-    }, [search, roles])
+    }, [roles])
 
-    return (
-        <div id="Resources" className={classes.wrapper}>
-            <Grid direction="baseline" container className={classes.search} justifyContent="space-between" alignItems="center" >
-                <TextField
-                    style={{width: '60%'}}
-                    label="Search"
-                    value={search}
-                    onChange={(e) => setSearch(e.target.value)} />
-                <Button style= {{width: '30%' }} onClick={() => navigateToPage({route: '/resources'})} >View All</Button>
-            </Grid>
-            <Resources resources={resources} />
-        </div>
-    )
+    return  <div id="Resources" className={classes.wrapper}>
+                <Grid direction="baseline" container className={classes.search} justifyContent="space-between" alignItems="center" >
+                    <TextField
+                        style={{width: '60%'}}
+                        label="Search"
+                        value={search}
+                        onChange={(e) => setSearch(e.target.value)} />
+                    <Button style= {{width: '30%' }} onClick={() => navigateToPage({route: '/resources'})} >View All</Button>
+                </Grid>
+                <Resources resources={resources} />
+            </div>
 };
-resourceCard.propTypes = {
-    classes: PropTypes.object.isRequired
+ResourcesCard.propTypes = {
+    classes: PropTypes.object.isRequired,
+    cardControl: PropTypes.object.isRequired
 };
 
-export default withStyles(styles)(resourceCard);
+export default withStyles(styles)(ResourcesCard);

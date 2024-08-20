@@ -1,9 +1,9 @@
 module.exports = {
     "name": "Organization",
-    "publisher": "Eckerd College",
+    "publisher": "EckerdCollege",
     "cards": [{
         "type": "OrganizationTemplate",
-        "source": "./src/cards/DepartmentTemplateCard",
+        "source": "./src/cards/DepartmentCard.jsx",
         "title": "Organization Template",
         "displayCardType": "Organization",
         "description": "Describes the card's function to the back end user",
@@ -18,7 +18,7 @@ module.exports = {
     }, 
     {
         "type": "Resources",
-        "source": "./src/cards/ResourcesCard",
+        "source": "./src/cards/ResourcesCard.jsx",
         "title": "Resources",
         "displayCardType": "Organization",
         "description": "Shows all resources available to the user",
